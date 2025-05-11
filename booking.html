@@ -1,0 +1,141 @@
+{% extends "layout.html" %}
+
+{% block title %}Book a Session with {{ tutor_user.username }}{% endblock %}
+
+{% block extra_head %}
+    <meta name="tutor-id" content="{{ tutor_profile.id }}">
+    <meta name="hourly-rate" content="{{ tutor_profile.hourly_rate }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="h3 mb-4">Book a Session with {{ tutor_user.username }}</h1>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Select Date and Time</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('student_book_tutor', tutor_id=tutor_profile.id) }}">
+                        {{ form.hidden_tag() }}
+                        <input type="hidden" id="tutor_id" value="{{ tutor_profile.id }}">
+                        
+                        <div class="mb-3">
+                            <label for="booking_date" class="form-label">Select Date</label>
+                            {{ form.booking_date(class="form-select", required=true) }}
+                            {% if form.booking_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.booking_date.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="start_time" class="form-label">Start Time</label>
+                            {{ form.start_time(class="form-select", required=true) }}
+                            {% if form.start_time.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.start_time.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="end_time" class="form-label">End Time</label>
+                            {{ form.end_time(class="form-select", required=true) }}
+                            {% if form.end_time.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.end_time.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="alert alert-info mb-4">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle fa-2x me-3"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h5 class="alert-heading mb-1">Session Information</h5>
+                                    <p class="mb-0">
+                                        Rate: <strong>€{{ tutor_profile.hourly_rate }}/hour</strong><br>
+                                        Estimated Price: <strong id="session_price">€0.00</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Tutor Info Card -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body text-center">
+                    {% set tutor_images = [
+                        'https://pixabay.com/get/gb56edf6b1bfca3487c8a1e5f01b7c2749762450f3e21bc42706ce4e8a5569009d5e84cd5ad0fcbd336203fb4827841ed524a378f1434f085f2b381e3e5da33f8_1280.jpg',
+                        'https://pixabay.com/get/g131c24f0313fdae8d218c2e7c9b5efaa1b9953abcec147665ee1cd02336e4d534e8cf57cfa04506f8388448cbfa20333cd6e121712f66b3ee92c9cb05eac5805_1280.jpg',
+                        'https://pixabay.com/get/gb838aa7fd461479931776b5cd889385a6c5ac30849fedb9486d5b2303b40c78c4ef02100ffa7dd377bf150c299a8f30485850a5687dc5126804d604b5f5c809c_1280.jpg',
+                        'https://pixabay.com/get/g96fe74eb4e78d0f94ef9581a7d3a9bcd707a911501cfe9ecd0b8d6ffb41127346845f69f553ce911cb38377451e99169ffd7d1305ce41852d087305e0110f815_1280.jpg'
+                    ] %}
+                    <img src="{{ tutor_profile.profile_image or tutor_images[tutor_profile.id % 4] }}" alt="{{ tutor_user.username }}" class="img-fluid rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                    <h5 class="card-title mb-1">{{ tutor_user.username }}</h5>
+                    <p class="text-muted mb-2">German Tutor</p>
+                    <div class="rating-display mb-3" data-rating="{{ tutor_profile.avg_rating }}">
+                        {% for i in range(5) %}
+                            <i class="star far fa-star"></i>
+                        {% endfor %}
+                        <span class="ms-1 text-muted">({{ tutor_profile.review_count }})</span>
+                    </div>
+                    <div class="badge bg-primary p-2 mb-3">€{{ tutor_profile.hourly_rate }}/hour</div>
+                    
+                    <p class="card-text small">
+                        {% if tutor_profile.bio %}
+                            {{ tutor_profile.bio[:150] }}{% if tutor_profile.bio|length > 150 %}...{% endif %}
+                        {% else %}
+                            Professional German tutor ready to help you achieve your language goals.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Booking Instructions -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Booking Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="ps-3">
+                        <li class="mb-2">Select a date from the available options.</li>
+                        <li class="mb-2">Choose a start time that works for you.</li>
+                        <li class="mb-2">Select an end time (sessions are typically 30-90 minutes).</li>
+                        <li class="mb-2">Review the estimated price before confirming.</li>
+                        <li class="mb-2">Proceed to payment to secure your booking.</li>
+                    </ol>
+                    <div class="alert alert-warning mt-3 mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <small>Cancellations must be made at least 24 hours before the session to receive a refund.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+{% endblock %}

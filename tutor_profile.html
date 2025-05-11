@@ -1,0 +1,198 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ tutor_user.username }} - Tutor Profile{% endblock %}
+
+{% block extra_head %}
+    <meta name="tutor-id" content="{{ tutor_profile.id }}">
+    <meta name="hourly-rate" content="{{ tutor_profile.hourly_rate }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Tutor Profile -->
+        <div class="col-lg-8">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="text-center">
+                                {% set tutor_images = [
+                                    'https://pixabay.com/get/gb56edf6b1bfca3487c8a1e5f01b7c2749762450f3e21bc42706ce4e8a5569009d5e84cd5ad0fcbd336203fb4827841ed524a378f1434f085f2b381e3e5da33f8_1280.jpg',
+                                    'https://pixabay.com/get/g131c24f0313fdae8d218c2e7c9b5efaa1b9953abcec147665ee1cd02336e4d534e8cf57cfa04506f8388448cbfa20333cd6e121712f66b3ee92c9cb05eac5805_1280.jpg',
+                                    'https://pixabay.com/get/gb838aa7fd461479931776b5cd889385a6c5ac30849fedb9486d5b2303b40c78c4ef02100ffa7dd377bf150c299a8f30485850a5687dc5126804d604b5f5c809c_1280.jpg',
+                                    'https://pixabay.com/get/g96fe74eb4e78d0f94ef9581a7d3a9bcd707a911501cfe9ecd0b8d6ffb41127346845f69f553ce911cb38377451e99169ffd7d1305ce41852d087305e0110f815_1280.jpg'
+                                ] %}
+                                <img src="{{ tutor_profile.profile_image or tutor_images[tutor_profile.id % 4] }}" alt="{{ tutor_user.username }}" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                                <h3 class="h5 mb-1">{{ tutor_user.username }}</h3>
+                                <p class="text-muted small mb-2">German Tutor</p>
+                                <div class="d-flex justify-content-center mb-2">
+                                    <div class="rating-display me-2" data-rating="{{ tutor_profile.avg_rating }}">
+                                        {% for i in range(5) %}
+                                            <i class="star far fa-star"></i>
+                                        {% endfor %}
+                                    </div>
+                                    <span class="text-muted">({{ tutor_profile.review_count }} reviews)</span>
+                                </div>
+                                <div class="badge bg-primary p-2 mb-3">€{{ tutor_profile.hourly_rate }}/hour</div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h4 class="mb-3">About Me</h4>
+                            <p>{{ tutor_profile.bio or "No bio available yet." }}</p>
+                            
+                            <h5 class="mb-2">Experience</h5>
+                            <p>{{ tutor_profile.years_experience or 0 }} year{% if tutor_profile.years_experience != 1 %}s{% endif %} of teaching experience</p>
+                            
+                            <h5 class="mb-2">Specialization</h5>
+                            <p>{{ tutor_profile.specialization or "General German" }}</p>
+                            
+                            <h5 class="mb-2">Proficiency Level</h5>
+                            <p>{{ tutor_profile.proficiency_level or "Not specified" }}</p>
+                            
+                            <div class="mt-4">
+                                <a href="{{ url_for('student_book_tutor', tutor_id=tutor_profile.id) }}" class="btn btn-primary">
+                                    <i class="fas fa-calendar-plus me-1"></i> Book a Session
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reviews -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>Reviews ({{ tutor_profile.review_count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        {% for review, student in reviews %}
+                            <div class="mb-4 pb-4 {% if not loop.last %}border-bottom{% endif %}">
+                                <div class="d-flex mb-3">
+                                    <div class="flex-shrink-0">
+                                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                            <span>{{ student.username[:1].upper() }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-0">{{ student.username }}</h6>
+                                        <div class="d-flex align-items-center">
+                                            <div class="rating-display me-2" data-rating="{{ review.rating }}">
+                                                {% for i in range(5) %}
+                                                    <i class="star far fa-star"></i>
+                                                {% endfor %}
+                                            </div>
+                                            <span class="text-muted small">{{ review.created_at.strftime('%B %d, %Y') }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="mb-0">{{ review.comment or "No comment provided." }}</p>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-star fa-3x mb-3 text-muted"></i>
+                            <p class="mb-0">No reviews yet. Be the first to review after your session!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Availability & Booking -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Available Sessions</h5>
+                </div>
+                <div class="card-body">
+                    {% if availability %}
+                        <div id="availability-calendar">
+                            {% for date, slots in availability.items() %}
+                                <div class="mb-3 p-3 bg-light rounded">
+                                    <h6 class="mb-2">{{ date|datetime('%A, %B %d') }}</h6>
+                                    {% for slot in slots %}
+                                        <div class="time-slot p-2 mb-1 bg-white rounded">
+                                            {{ slot.start }} - {{ slot.end }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('student_book_tutor', tutor_id=tutor_profile.id) }}" class="btn btn-primary">
+                                <i class="fas fa-calendar-plus me-1"></i> Book a Session
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-times fa-3x mb-3 text-muted"></i>
+                            <p class="mb-0">No available sessions at the moment.</p>
+                            <p class="text-muted small">Please check back later or contact the tutor directly.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Quick Info Box -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Quick Info</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <span><i class="fas fa-euro-sign me-2 text-primary"></i>Hourly Rate</span>
+                            <span class="badge bg-primary rounded-pill">€{{ tutor_profile.hourly_rate }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <span><i class="fas fa-star me-2 text-warning"></i>Rating</span>
+                            <span>{{ "%.1f"|format(tutor_profile.avg_rating) }} / 5</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <span><i class="fas fa-user-graduate me-2 text-info"></i>Experience</span>
+                            <span>{{ tutor_profile.years_experience or 0 }} year{% if tutor_profile.years_experience != 1 %}s{% endif %}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <span><i class="fas fa-book me-2 text-success"></i>Specializes in</span>
+                            <span>{{ tutor_profile.specialization or "General German" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <span><i class="fas fa-comment-dots me-2 text-danger"></i>Level</span>
+                            <span>{{ tutor_profile.proficiency_level or "All Levels" }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize star ratings
+        document.querySelectorAll('.rating-display').forEach(function(container) {
+            const rating = parseFloat(container.dataset.rating || 0);
+            const stars = container.querySelectorAll('.star');
+            
+            stars.forEach(function(star, index) {
+                if (index < Math.floor(rating)) {
+                    star.classList.add('fas');
+                    star.classList.remove('far');
+                } else if (index < rating) {
+                    star.classList.add('fas');
+                    star.classList.add('fa-star-half-alt');
+                    star.classList.remove('fa-star');
+                    star.classList.remove('far');
+                } else {
+                    star.classList.add('far');
+                    star.classList.remove('fas');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

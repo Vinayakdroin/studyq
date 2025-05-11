@@ -1,0 +1,197 @@
+{% extends "layout.html" %}
+
+{% block title %}Review Your Session - German Tutors{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="h3 mb-4">Review Your Session with {{ tutor.username }}</h1>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>Your Feedback</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('student_review', booking_id=booking.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Rate your session:</label>
+                            <div class="rating-selector mb-3">
+                                {% for i in range(1, 6) %}
+                                    <span class="star-rating" data-rating="{{ i }}">
+                                        <i class="far fa-star"></i>
+                                    </span>
+                                {% endfor %}
+                            </div>
+                            {{ form.rating(type="hidden", required=true) }}
+                            {% if form.rating.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.rating.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="comment" class="form-label">Your comments (optional):</label>
+                            {{ form.comment(class="form-control", rows=5, placeholder="Share your experience with this tutor...") }}
+                            {% if form.comment.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.comment.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Session Details Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Session Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                        <div class="flex-shrink-0">
+                            {% set tutor_images = [
+                                'https://pixabay.com/get/gb56edf6b1bfca3487c8a1e5f01b7c2749762450f3e21bc42706ce4e8a5569009d5e84cd5ad0fcbd336203fb4827841ed524a378f1434f085f2b381e3e5da33f8_1280.jpg',
+                                'https://pixabay.com/get/g131c24f0313fdae8d218c2e7c9b5efaa1b9953abcec147665ee1cd02336e4d534e8cf57cfa04506f8388448cbfa20333cd6e121712f66b3ee92c9cb05eac5805_1280.jpg',
+                                'https://pixabay.com/get/gb838aa7fd461479931776b5cd889385a6c5ac30849fedb9486d5b2303b40c78c4ef02100ffa7dd377bf150c299a8f30485850a5687dc5126804d604b5f5c809c_1280.jpg',
+                                'https://pixabay.com/get/g96fe74eb4e78d0f94ef9581a7d3a9bcd707a911501cfe9ecd0b8d6ffb41127346845f69f553ce911cb38377451e99169ffd7d1305ce41852d087305e0110f815_1280.jpg'
+                            ] %}
+                            <img src="{{ tutor_profile.profile_image or tutor_images[tutor_profile.id % 4] }}" alt="{{ tutor.username }}" width="60" height="60" class="rounded-circle">
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mb-0">{{ tutor.username }}</h5>
+                            <p class="text-muted small mb-0">German Tutor</p>
+                        </div>
+                    </div>
+                    
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Date:</span>
+                            <span>{{ booking.booking_date.strftime('%B %d, %Y') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Time:</span>
+                            <span>{{ booking.start_time.strftime('%I:%M %p') }} - {{ booking.end_time.strftime('%I:%M %p') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Duration:</span>
+                            {% set duration_minutes = ((booking.end_time.hour * 60 + booking.end_time.minute) - (booking.start_time.hour * 60 + booking.start_time.minute)) %}
+                            <span>{{ duration_minutes // 60 }} hr{% if duration_minutes // 60 != 1 %}s{% endif %} {{ duration_minutes % 60 }} min</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Rating Guidelines -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Rating Guidelines</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="ps-3 mb-0">
+                        <li class="mb-2">
+                            <strong>5 stars:</strong> Excellent session, exceeded expectations
+                        </li>
+                        <li class="mb-2">
+                            <strong>4 stars:</strong> Very good, helpful and knowledgeable
+                        </li>
+                        <li class="mb-2">
+                            <strong>3 stars:</strong> Good, met expectations
+                        </li>
+                        <li class="mb-2">
+                            <strong>2 stars:</strong> Fair, some issues with the session
+                        </li>
+                        <li class="mb-0">
+                            <strong>1 star:</strong> Poor, significant problems with the session
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Star rating initialization
+        const stars = document.querySelectorAll('.star-rating');
+        const ratingInput = document.getElementById('rating');
+        
+        stars.forEach(function(star) {
+            star.addEventListener('click', function() {
+                const rating = parseInt(this.dataset.rating);
+                ratingInput.value = rating;
+                
+                // Update star display
+                stars.forEach(function(s, index) {
+                    const starRating = parseInt(s.dataset.rating);
+                    if (starRating <= rating) {
+                        s.classList.add('selected');
+                        s.querySelector('i').className = 'fas fa-star';
+                    } else {
+                        s.classList.remove('selected');
+                        s.querySelector('i').className = 'far fa-star';
+                    }
+                });
+            });
+            
+            // Add hover effect
+            star.addEventListener('mouseenter', function() {
+                const rating = parseInt(this.dataset.rating);
+                
+                stars.forEach(function(s) {
+                    const starRating = parseInt(s.dataset.rating);
+                    if (starRating <= rating) {
+                        s.classList.add('hover');
+                    } else {
+                        s.classList.remove('hover');
+                    }
+                });
+            });
+        });
+        
+        // Remove hover effect when mouse leaves container
+        document.querySelector('.rating-selector').addEventListener('mouseleave', function() {
+            stars.forEach(function(s) {
+                s.classList.remove('hover');
+            });
+            
+            // Restore selected rating
+            if (ratingInput && ratingInput.value) {
+                updateStars(parseInt(ratingInput.value));
+            }
+        });
+        
+        // Update stars display based on selected rating
+        function updateStars(rating) {
+            stars.forEach(function(star) {
+                const starRating = parseInt(star.dataset.rating);
+                if (starRating <= rating) {
+                    star.classList.add('selected');
+                    star.querySelector('i').className = 'fas fa-star';
+                } else {
+                    star.classList.remove('selected');
+                    star.querySelector('i').className = 'far fa-star';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

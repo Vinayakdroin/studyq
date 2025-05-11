@@ -1,0 +1,177 @@
+{% extends "layout.html" %}
+
+{% block title %}Find Tutors - German Tutors{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="dashboard-sidebar" id="dashboard-sidebar">
+            <div class="p-3">
+                <h5 class="text-light mb-3">Student Dashboard</h5>
+                <hr class="bg-light">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="{{ url_for('student_dashboard') }}" class="sidebar-link">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('student_tutor_list') }}" class="sidebar-link active">
+                            <i class="fas fa-search"></i> Find Tutors
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="dashboard-content col">
+            <button class="btn btn-primary mb-3 d-lg-none" id="dashboard-menu-toggle">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+            
+            <h1 class="h3 mb-4">Find Your Perfect German Tutor</h1>
+            
+            <!-- Filter Box -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Tutors</h5>
+                </div>
+                <div class="card-body">
+                    <form id="filter-form" method="GET" action="{{ url_for('student_tutor_list') }}">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="min_price" class="form-label">Min Price (€)</label>
+                                <input type="number" class="form-control" id="min_price" name="min_price" min="0" step="5" value="{{ min_price }}">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="max_price" class="form-label">Max Price (€)</label>
+                                <input type="number" class="form-control" id="max_price" name="max_price" min="0" step="5" value="{{ max_price }}">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="min_rating" class="form-label">Min Rating</label>
+                                <select class="form-select" id="min_rating" name="min_rating">
+                                    <option value="0" {% if min_rating == 0 %}selected{% endif %}>Any Rating</option>
+                                    <option value="1" {% if min_rating == 1 %}selected{% endif %}>★ and up</option>
+                                    <option value="2" {% if min_rating == 2 %}selected{% endif %}>★★ and up</option>
+                                    <option value="3" {% if min_rating == 3 %}selected{% endif %}>★★★ and up</option>
+                                    <option value="4" {% if min_rating == 4 %}selected{% endif %}>★★★★ and up</option>
+                                    <option value="5" {% if min_rating == 5 %}selected{% endif %}>★★★★★</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="specialization" class="form-label">Specialization</label>
+                                <select class="form-select" id="specialization" name="specialization">
+                                    <option value="">Any Specialization</option>
+                                    {% for specialization in specializations %}
+                                        <option value="{{ specialization }}" {% if current_specialization == specialization %}selected{% endif %}>
+                                            {{ specialization }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-1"></i> Apply Filters
+                            </button>
+                            <a href="{{ url_for('student_tutor_list') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i> Clear Filters
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Tutors Grid -->
+            <div class="row">
+                {% if tutors %}
+                    {% for tutor_profile, tutor in tutors %}
+                        <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
+                            <div class="card card-tutor h-100 shadow-sm">
+                                <div class="tutor-image-container">
+                                    {% set tutor_images = [
+                                        'https://pixabay.com/get/gb56edf6b1bfca3487c8a1e5f01b7c2749762450f3e21bc42706ce4e8a5569009d5e84cd5ad0fcbd336203fb4827841ed524a378f1434f085f2b381e3e5da33f8_1280.jpg',
+                                        'https://pixabay.com/get/g131c24f0313fdae8d218c2e7c9b5efaa1b9953abcec147665ee1cd02336e4d534e8cf57cfa04506f8388448cbfa20333cd6e121712f66b3ee92c9cb05eac5805_1280.jpg',
+                                        'https://pixabay.com/get/gb838aa7fd461479931776b5cd889385a6c5ac30849fedb9486d5b2303b40c78c4ef02100ffa7dd377bf150c299a8f30485850a5687dc5126804d604b5f5c809c_1280.jpg',
+                                        'https://pixabay.com/get/g96fe74eb4e78d0f94ef9581a7d3a9bcd707a911501cfe9ecd0b8d6ffb41127346845f69f553ce911cb38377451e99169ffd7d1305ce41852d087305e0110f815_1280.jpg'
+                                    ] %}
+                                    <img src="{{ tutor_profile.profile_image or tutor_images[loop.index0 % 4] }}" alt="{{ tutor.username }}" class="tutor-image">
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title mb-1">{{ tutor.username }}</h5>
+                                    <div class="mb-2">
+                                        <span class="badge bg-primary badge-rate">€{{ tutor_profile.hourly_rate }}/hour</span>
+                                        {% if tutor_profile.specialization %}
+                                            <span class="badge bg-secondary">{{ tutor_profile.specialization }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="rating-display mb-2" data-rating="{{ tutor_profile.avg_rating }}">
+                                        {% for i in range(5) %}
+                                            <i class="star far fa-star"></i>
+                                        {% endfor %}
+                                        <span class="ms-1 text-muted small">({{ tutor_profile.review_count }})</span>
+                                    </div>
+                                    <p class="card-text text-muted small">
+                                        {% if tutor_profile.bio %}
+                                            {{ tutor_profile.bio[:100] }}{% if tutor_profile.bio|length > 100 %}...{% endif %}
+                                        {% else %}
+                                            Professional German tutor ready to help you achieve your language goals.
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="card-footer bg-transparent border-top-0">
+                                    <a href="{{ url_for('student_tutor_profile', tutor_id=tutor_profile.id) }}" class="btn btn-outline-primary w-100">View Profile</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle me-2"></i>No tutors found matching your criteria. Try adjusting your filters.
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize dashboard toggle
+        const dashboardToggle = document.getElementById('dashboard-menu-toggle');
+        if (dashboardToggle) {
+            dashboardToggle.addEventListener('click', function() {
+                const sidebar = document.getElementById('dashboard-sidebar');
+                sidebar.classList.toggle('show');
+            });
+        }
+        
+        // Initialize star ratings
+        document.querySelectorAll('.rating-display').forEach(function(container) {
+            const rating = parseFloat(container.dataset.rating || 0);
+            const stars = container.querySelectorAll('.star');
+            
+            stars.forEach(function(star, index) {
+                if (index < Math.floor(rating)) {
+                    star.classList.add('fas');
+                    star.classList.remove('far');
+                } else if (index < rating) {
+                    star.classList.add('fas');
+                    star.classList.add('fa-star-half-alt');
+                    star.classList.remove('fa-star');
+                    star.classList.remove('far');
+                } else {
+                    star.classList.add('far');
+                    star.classList.remove('fas');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends "layout.html" %}
+
+{% block title %}Payment - German Tutors{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="h3 mb-4">Complete Your Booking</h1>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Payment Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-info-circle fa-2x me-3"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="alert-heading mb-1">This is a Demo Mode</h5>
+                                <p class="mb-0">No real payments will be processed. You can use any valid-looking credit card details for this demonstration.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form id="payment-form" method="POST" action="{{ url_for('student_payment', booking_id=booking.id) }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="alert alert-danger d-none mb-3" id="payment-error"></div>
+                        
+                        <div class="mb-3">
+                            <label for="card_number" class="form-label">Card Number</label>
+                            {{ form.card_number(class="form-control", placeholder="1234 5678 9012 3456", autocomplete="cc-number") }}
+                            {% if form.card_number.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.card_number.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="card_expiry" class="form-label">Expiry Date (MM/YY)</label>
+                                {{ form.card_expiry(class="form-control", placeholder="MM/YY", autocomplete="cc-exp") }}
+                                {% if form.card_expiry.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.card_expiry.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="card_cvc" class="form-label">CVC</label>
+                                {{ form.card_cvc(class="form-control", placeholder="123", autocomplete="cc-csc") }}
+                                {% if form.card_cvc.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.card_cvc.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="cardholder_name" class="form-label">Cardholder Name</label>
+                            {{ form.cardholder_name(class="form-control", placeholder="John Doe", autocomplete="cc-name") }}
+                            {% if form.cardholder_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.cardholder_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Session Summary Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Booking Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                        <div class="flex-shrink-0">
+                            {% set tutor_images = [
+                                'https://pixabay.com/get/gb56edf6b1bfca3487c8a1e5f01b7c2749762450f3e21bc42706ce4e8a5569009d5e84cd5ad0fcbd336203fb4827841ed524a378f1434f085f2b381e3e5da33f8_1280.jpg',
+                                'https://pixabay.com/get/g131c24f0313fdae8d218c2e7c9b5efaa1b9953abcec147665ee1cd02336e4d534e8cf57cfa04506f8388448cbfa20333cd6e121712f66b3ee92c9cb05eac5805_1280.jpg',
+                                'https://pixabay.com/get/gb838aa7fd461479931776b5cd889385a6c5ac30849fedb9486d5b2303b40c78c4ef02100ffa7dd377bf150c299a8f30485850a5687dc5126804d604b5f5c809c_1280.jpg',
+                                'https://pixabay.com/get/g96fe74eb4e78d0f94ef9581a7d3a9bcd707a911501cfe9ecd0b8d6ffb41127346845f69f553ce911cb38377451e99169ffd7d1305ce41852d087305e0110f815_1280.jpg'
+                            ] %}
+                            <img src="{{ tutor_profile.profile_image or tutor_images[tutor_profile.id % 4] }}" alt="{{ tutor.username }}" width="50" height="50" class="rounded-circle">
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mb-0">{{ tutor.username }}</h5>
+                            <p class="text-muted small mb-0">German Tutor</p>
+                        </div>
+                    </div>
+                    
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Date:</span>
+                            <span class="text-end">{{ booking.booking_date.strftime('%B %d, %Y') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Time:</span>
+                            <span class="text-end">{{ booking.start_time.strftime('%I:%M %p') }} - {{ booking.end_time.strftime('%I:%M %p') }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Session Rate:</span>
+                            <span class="text-end">€{{ tutor_profile.hourly_rate }}/hour</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="bg-light p-3 rounded mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Session Price:</span>
+                            <span>€{{ total_price }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-muted small">
+                            <span>Platform Fee (20%):</span>
+                            <span>€{{ platform_fee }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-0 text-muted small">
+                            <span>Tutor Receives:</span>
+                            <span>€{{ tutor_payout }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between fw-bold">
+                        <span>Total Amount:</span>
+                        <span>€{{ total_price }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cancellation Policy -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Cancellation Policy</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0 ps-3">
+                        <li class="mb-2">Free cancellation up to 24 hours before the session.</li>
+                        <li class="mb-2">Cancellations within 24 hours are subject to a 50% fee.</li>
+                        <li class="mb-2">No-shows will be charged the full amount.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/payment.js') }}"></script>
+{% endblock %}

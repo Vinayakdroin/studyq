@@ -1,0 +1,292 @@
+{% extends "layout.html" %}
+
+{% block title %}Student Dashboard - German Tutors{% endblock %}
+
+{% block extra_head %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 col-xl-2 dashboard-sidebar" id="dashboard-sidebar">
+            <div class="py-4 px-3">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="flex-shrink-0">
+                        <img src="https://pixabay.com/get/g19eb4546453ddce0f2d4e4dd0b0fff5ab3692dacd20b37ded33a89ebc45ca3ddfc6786f16a18a3e7c62d0fe99096b5bd79f95ff875441cde1cfc7f92d7a404db_1280.jpg" class="rounded-circle" width="50" height="50" alt="{{ current_user.username }}">
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-0">{{ current_user.username }}</h6>
+                        <small class="text-muted">Student</small>
+                    </div>
+                </div>
+                
+                <hr class="text-white-50">
+                
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="{{ url_for('student_dashboard') }}" class="sidebar-link active">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('student_tutor_list') }}" class="sidebar-link">
+                            <i class="fas fa-search"></i> Find Tutors
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#upcoming-sessions" class="sidebar-link smooth-scroll">
+                            <i class="fas fa-calendar-alt"></i> My Sessions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#past-sessions" class="sidebar-link smooth-scroll">
+                            <i class="fas fa-history"></i> Past Sessions
+                        </a>
+                    </li>
+                </ul>
+                
+                <hr class="text-white-50">
+                
+                <a href="{{ url_for('logout') }}" class="sidebar-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-lg-9 col-xl-10 dashboard-content">
+            <!-- Mobile Menu Toggle -->
+            <button class="btn btn-primary d-lg-none w-100 mb-3" id="dashboard-menu-toggle">
+                <i class="fas fa-bars me-2"></i> Menu
+            </button>
+            
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">Student Dashboard</h1>
+                <a href="{{ url_for('student_tutor_list') }}" class="btn btn-primary">
+                    <i class="fas fa-search me-2"></i> Find a Tutor
+                </a>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="card stat-box primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted">Upcoming Sessions</h6>
+                                    <h3 class="mb-0">{{ upcoming_bookings|length }}</h3>
+                                </div>
+                                <i class="fas fa-calendar-alt text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card stat-box info">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted">Completed Sessions</h6>
+                                    <h3 class="mb-0">{{ past_bookings|length }}</h3>
+                                </div>
+                                <i class="fas fa-check-circle text-info"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card stat-box success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted">Pending Reviews</h6>
+                                    <h3 class="mb-0">{{ past_bookings|selectattr('3', 'none')|list|length }}</h3>
+                                </div>
+                                <i class="fas fa-star text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Upcoming Sessions -->
+            <div class="card mb-4" id="upcoming-sessions">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i> Upcoming Sessions</h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_bookings %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tutor</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking, tutor_profile, tutor in upcoming_bookings %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://pixabay.com/get/gb56edf6b1bfca3487c8a1e5f01b7c2749762450f3e21bc42706ce4e8a5569009d5e84cd5ad0fcbd336203fb4827841ed524a378f1434f085f2b381e3e5da33f8_1280.jpg" width="40" height="40" class="rounded-circle me-2" alt="{{ tutor.username }}">
+                                                    <div>
+                                                        <h6 class="mb-0">{{ tutor.username }}</h6>
+                                                        <small class="text-muted">€{{ tutor_profile.hourly_rate }}/hour</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ booking.booking_date.strftime('%a, %b %d, %Y') }}</td>
+                                            <td>{{ booking.start_time.strftime('%I:%M %p') }} - {{ booking.end_time.strftime('%I:%M %p') }}</td>
+                                            <td>
+                                                {% if booking.status.value == 'confirmed' %}
+                                                    <span class="badge bg-success">Confirmed</span>
+                                                {% elif booking.status.value == 'pending' %}
+                                                    <span class="badge bg-warning">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ url_for('student_tutor_profile', tutor_id=tutor_profile.id) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="View Tutor">
+                                                        <i class="fas fa-user"></i>
+                                                    </a>
+                                                    {% if booking.status.value == 'confirmed' %}
+                                                        <button class="btn btn-sm btn-outline-success btn-complete-session" data-booking-id="{{ booking.id }}" data-bs-toggle="tooltip" title="Mark as Completed">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                    {% endif %}
+                                                    <button class="btn btn-sm btn-outline-danger btn-cancel-session" data-booking-id="{{ booking.id }}" data-bs-toggle="tooltip" title="Cancel Session">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-calendar-alt fa-3x text-muted"></i>
+                            </div>
+                            <h5>No upcoming sessions</h5>
+                            <p class="text-muted">You don't have any upcoming sessions scheduled.</p>
+                            <a href="{{ url_for('student_tutor_list') }}" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i> Find a Tutor
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Past Sessions -->
+            <div class="card" id="past-sessions">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i> Past Sessions</h5>
+                </div>
+                <div class="card-body">
+                    {% if past_bookings %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tutor</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                        <th>Review</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking, tutor_profile, tutor, review in past_bookings %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://pixabay.com/get/gb56edf6b1bfca3487c8a1e5f01b7c2749762450f3e21bc42706ce4e8a5569009d5e84cd5ad0fcbd336203fb4827841ed524a378f1434f085f2b381e3e5da33f8_1280.jpg" width="40" height="40" class="rounded-circle me-2" alt="{{ tutor.username }}">
+                                                    <div>
+                                                        <h6 class="mb-0">{{ tutor.username }}</h6>
+                                                        <small class="text-muted">€{{ tutor_profile.hourly_rate }}/hour</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ booking.booking_date.strftime('%a, %b %d, %Y') }}</td>
+                                            <td>{{ booking.start_time.strftime('%I:%M %p') }} - {{ booking.end_time.strftime('%I:%M %p') }}</td>
+                                            <td>
+                                                <span class="badge bg-info">Completed</span>
+                                            </td>
+                                            <td>
+                                                {% if review %}
+                                                    <span class="badge bg-success">Reviewed</span>
+                                                {% else %}
+                                                    <a href="{{ url_for('student_review', booking_id=booking.id) }}" class="btn btn-sm btn-warning">
+                                                        <i class="fas fa-star me-1"></i> Leave Review
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-history fa-3x text-muted"></i>
+                            </div>
+                            <h5>No past sessions</h5>
+                            <p class="text-muted">You haven't completed any sessions yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize dashboard toggle
+        const dashboardToggle = document.getElementById('dashboard-menu-toggle');
+        if (dashboardToggle) {
+            dashboardToggle.addEventListener('click', function() {
+                const sidebar = document.getElementById('dashboard-sidebar');
+                sidebar.classList.toggle('show');
+            });
+        }
+        
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Session completion and cancellation handlers
+        document.querySelectorAll('.btn-complete-session').forEach(button => {
+            button.addEventListener('click', function() {
+                const bookingId = this.getAttribute('data-booking-id');
+                // Add your completion logic here
+                console.log('Mark session as completed:', bookingId);
+            });
+        });
+        
+        document.querySelectorAll('.btn-cancel-session').forEach(button => {
+            button.addEventListener('click', function() {
+                const bookingId = this.getAttribute('data-booking-id');
+                // Add your cancellation logic here
+                console.log('Cancel session:', bookingId);
+            });
+        });
+    });
+</script>
+{% endblock %}
