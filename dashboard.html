@@ -1,0 +1,558 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard - German Tutors{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="dashboard-sidebar" id="dashboard-sidebar">
+            <div class="p-3">
+                <h5 class="text-light mb-3">Admin Dashboard</h5>
+                <hr class="bg-light">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="{{ url_for('admin_dashboard') }}" class="sidebar-link active">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="dashboard-content col">
+            <button class="btn btn-primary mb-3 d-lg-none" id="dashboard-menu-toggle">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+            
+            <h1 class="h3 mb-4">Admin Dashboard</h1>
+            
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm stat-box primary">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Tutors</div>
+                                    <div class="h5 mb-0 fw-bold">{{ tutor_count }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm stat-box success">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Students</div>
+                                    <div class="h5 mb-0 fw-bold">{{ student_count }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm stat-box info">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Bookings</div>
+                                    <div class="h5 mb-0 fw-bold">{{ booking_count }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm stat-box warning">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Platform Revenue</div>
+                                    <div class="h5 mb-0 fw-bold">€{{ "%.2f"|format(total_revenue) }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Recent Bookings -->
+                <div class="col-xl-8 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Recent Bookings</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_bookings %}
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Time</th>
+                                                <th>Student</th>
+                                                <th>Tutor</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for booking, student, tutor_profile, tutor in recent_bookings %}
+                                                <tr>
+                                                    <td>{{ booking.booking_date.strftime('%b %d, %Y') }}</td>
+                                                    <td>{{ booking.start_time.strftime('%I:%M %p') }} - {{ booking.end_time.strftime('%I:%M %p') }}</td>
+                                                    <td>{{ student.username }}</td>
+                                                    <td>{{ tutor.username }}</td>
+                                                    <td>
+                                                        {% if booking.status.name == 'PENDING' %}
+                                                            <span class="badge bg-warning">Pending</span>
+                                                        {% elif booking.status.name == 'CONFIRMED' %}
+                                                            <span class="badge bg-success">Confirmed</span>
+                                                        {% elif booking.status.name == 'COMPLETED' %}
+                                                            <span class="badge bg-info">Completed</span>
+                                                        {% elif booking.status.name == 'CANCELLED' %}
+                                                            <span class="badge bg-danger">Cancelled</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="fas fa-calendar-alt fa-3x mb-3 text-muted"></i>
+                                    <p class="mb-0">No bookings yet.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Top Tutors -->
+                <div class="col-xl-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Tutors</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if top_tutors %}
+                                <div class="list-group list-group-flush">
+                                    {% for tutor_profile, tutor, booking_count, earnings in top_tutors %}
+                                        <div class="list-group-item px-0">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    {% set tutor_images = [
+                                                        'https://pixabay.com/get/gb56edf6b1bfca3487c8a1e5f01b7c2.jpg',
+                                                        'https://pixabay.com/get/abc123.jpg'
+                                                    ] %}
+                                                    
+{% block title %}Admin Dashboard - German Tutors{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="dashboard-sidebar" id="dashboard-sidebar">
+            <div class="p-3">
+                <h5 class="text-light mb-3">Admin Dashboard</h5>
+                <hr class="bg-light">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="{{ url_for('admin_dashboard') }}" class="sidebar-link active">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#users-section" class="sidebar-link">
+                            <i class="fas fa-users"></i> Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#bookings-section" class="sidebar-link">
+                            <i class="fas fa-calendar-check"></i> Bookings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#payments-section" class="sidebar-link">
+                            <i class="fas fa-credit-card"></i> Payments
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="dashboard-content col">
+            <button class="btn btn-primary mb-3 d-lg-none" id="dashboard-menu-toggle">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+            
+            <h1 class="h3 mb-4">Admin Dashboard</h1>
+            
+            <!-- Stats Row -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100 stat-box primary">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Tutors</div>
+                                    <div class="h5 mb-0 fw-bold">{{ tutor_count }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100 stat-box info">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Students</div>
+                                    <div class="h5 mb-0 fw-bold">{{ student_count }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100 stat-box success">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Bookings</div>
+                                    <div class="h5 mb-0 fw-bold">{{ booking_count }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100 stat-box warning">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Platform Revenue</div>
+                                    <div class="h5 mb-0 fw-bold">€{{ "%.2f"|format(total_revenue) }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Top Tutors -->
+                <div class="col-xl-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Tutors</h5>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                        <div class="card-body">
+                            {% if top_tutors %}
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Tutor</th>
+                                                <th>Bookings</th>
+                                                <th>Earnings</th>
+                                                <th>Rating</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for tutor_profile, tutor, booking_count, earnings in top_tutors %}
+                                                <tr>
+                                                    <td>{{ tutor.username }}</td>
+                                                    <td>{{ booking_count }}</td>
+                                                    <td>€{{ "%.2f"|format(earnings) }}</td>
+                                                    <td>
+                                                        <div class="rating-display" data-rating="{{ tutor_profile.avg_rating }}">
+                                                            {% for i in range(5) %}
+                                                                <i class="star far fa-star"></i>
+                                                            {% endfor %}
+                                                            <span class="ms-1 text-muted">({{ tutor_profile.review_count }})</span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-chart-line fa-3x mb-3 text-muted"></i>
+                                    <p class="mb-0">No tutor data available yet.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent bookings -->
+                <div class="col-xl-6 mb-4" id="bookings-section">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Recent Bookings</h5>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                        <div class="card-body">
+                            {% if recent_bookings %}
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Student</th>
+                                                <th>Tutor</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for booking, student, tutor_profile, tutor in recent_bookings %}
+                                                <tr>
+                                                    <td>{{ booking.booking_date.strftime('%b %d, %Y') }}</td>
+                                                    <td>{{ student.username }}</td>
+                                                    <td>{{ tutor.username }}</td>
+                                                    <td>
+                                                        {% if booking.status.name == 'PENDING' %}
+                                                            <span class="badge bg-warning">Pending</span>
+                                                        {% elif booking.status.name == 'CONFIRMED' %}
+                                                            <span class="badge bg-success">Confirmed</span>
+                                                        {% elif booking.status.name == 'COMPLETED' %}
+                                                            <span class="badge bg-info">Completed</span>
+                                                        {% elif booking.status.name == 'CANCELLED' %}
+                                                            <span class="badge bg-danger">Cancelled</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-calendar-check fa-3x mb-3 text-muted"></i>
+                                    <p class="mb-0">No bookings found.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Payments -->
+            <div class="card shadow-sm mb-4" id="payments-section">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Recent Payments</h5>
+                    <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_payments %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Student</th>
+                                        <th>Tutor</th>
+                                        <th>Amount</th>
+                                        <th>Platform Fee</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment, booking, student, tutor in recent_payments %}
+                                        <tr>
+                                            <td>{{ payment.payment_date.strftime('%b %d, %Y') }}</td>
+                                            <td>{{ student.username }}</td>
+                                            <td>{{ tutor.username }}</td>
+                                            <td>€{{ "%.2f"|format(payment.amount) }}</td>
+                                            <td>€{{ "%.2f"|format(payment.platform_fee) }}</td>
+                                            <td>
+                                                {% if payment.status.name == 'PENDING' %}
+                                                    <span class="badge bg-warning">Pending</span>
+                                                {% elif payment.status.name == 'COMPLETED' %}
+                                                    <span class="badge bg-success">Completed</span>
+                                                {% elif payment.status.name == 'REFUNDED' %}
+                                                    <span class="badge bg-danger">Refunded</span>
+                                                {% elif payment.status.name == 'FAILED' %}
+                                                    <span class="badge bg-danger">Failed</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-money-bill-wave fa-3x mb-3 text-muted"></i>
+                            <p class="mb-0">No payment records found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Users Section -->
+            <div class="card shadow-sm" id="users-section">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>User Management</h5>
+                    <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs mb-3" id="userTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tutors-tab" data-bs-toggle="tab" data-bs-target="#tutors" type="button" role="tab" aria-controls="tutors" aria-selected="true">Tutors</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="students-tab" data-bs-toggle="tab" data-bs-target="#students" type="button" role="tab" aria-controls="students" aria-selected="false">Students</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="userTabsContent">
+                        <div class="tab-pane fade show active" id="tutors" role="tabpanel" aria-labelledby="tutors-tab">
+                            <div class="d-flex justify-content-between mb-3">
+                                <div class="d-flex">
+                                    <input type="text" class="form-control me-2" placeholder="Search tutors...">
+                                    <button class="btn btn-outline-primary">Search</button>
+                                </div>
+                                <button class="btn btn-success">
+                                    <i class="fas fa-plus me-1"></i> Add Tutor
+                                </button>
+                            </div>
+                            
+                            <!-- Placeholder for tutors list - would be filled with actual data -->
+                            <div class="text-center py-4">
+                                <i class="fas fa-chalkboard-teacher fa-3x mb-3 text-muted"></i>
+                                <p class="mb-0">User management features coming soon.</p>
+                                <p class="text-muted small">This section will allow managing tutor accounts.</p>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="students" role="tabpanel" aria-labelledby="students-tab">
+                            <div class="d-flex justify-content-between mb-3">
+                                <div class="d-flex">
+                                    <input type="text" class="form-control me-2" placeholder="Search students...">
+                                    <button class="btn btn-outline-primary">Search</button>
+                                </div>
+                                <button class="btn btn-success">
+                                    <i class="fas fa-plus me-1"></i> Add Student
+                                </button>
+                            </div>
+                            
+                            <!-- Placeholder for students list - would be filled with actual data -->
+                            <div class="text-center py-4">
+                                <i class="fas fa-user-graduate fa-3x mb-3 text-muted"></i>
+                                <p class="mb-0">User management features coming soon.</p>
+                                <p class="text-muted small">This section will allow managing student accounts.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize dashboard toggle
+        const dashboardToggle = document.getElementById('dashboard-menu-toggle');
+        if (dashboardToggle) {
+            dashboardToggle.addEventListener('click', function() {
+                const sidebar = document.getElementById('dashboard-sidebar');
+                sidebar.classList.toggle('show');
+            });
+        }
+        
+        // Initialize star ratings
+        document.querySelectorAll('.rating-display').forEach(function(container) {
+            const rating = parseFloat(container.dataset.rating || 0);
+            const stars = container.querySelectorAll('.star');
+            
+            stars.forEach(function(star, index) {
+                if (index < Math.floor(rating)) {
+                    star.classList.add('fas');
+                    star.classList.remove('far');
+                } else if (index < rating) {
+                    star.classList.add('fas');
+                    star.classList.add('fa-star-half-alt');
+                    star.classList.remove('fa-star');
+                    star.classList.remove('far');
+                } else {
+                    star.classList.add('far');
+                    star.classList.remove('fas');
+                }
+            });
+        });
+        
+        // Smooth scrolling for section links
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            if (link.getAttribute('href').startsWith('#')) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        // For mobile: close sidebar after click
+                        if (window.innerWidth < 992) {
+                            document.getElementById('dashboard-sidebar').classList.remove('show');
+                        }
+                        
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                        
+                        // Update active state
+                        document.querySelectorAll('.sidebar-link').forEach(l => {
+                            l.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}
