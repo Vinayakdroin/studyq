@@ -1,0 +1,312 @@
+{% extends "layout.html" %}
+
+{% block title %}German Tutors - Find Your Perfect German Language Tutor{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="display-4 mb-4">Master German with Expert Tutors</h1>
+                <p class="lead mb-5">Connect with qualified German tutors for personalized learning experiences tailored to your goals and schedule.</p>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_student() %}
+                        <a href="{{ url_for('student_tutor_list') }}" class="btn btn-primary btn-lg px-5 me-3">Find a Tutor</a>
+                    {% else %}
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg px-5 me-3">Go to Dashboard</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-5 me-3">Get Started</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-5">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Why Choose German Tutors?</h2>
+            <p class="lead text-muted">We make learning German easy, effective, and enjoyable</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-4">
+                            <i class="fas fa-user-graduate fa-2x p-3"></i>
+                        </div>
+                        <h3 class="h5 card-title">Expert Tutors</h3>
+                        <p class="card-text">Our tutors are qualified and experienced in teaching German to students of all levels.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-4">
+                            <i class="fas fa-laptop fa-2x p-3"></i>
+                        </div>
+                        <h3 class="h5 card-title">Online Convenience</h3>
+                        <p class="card-text">Learn from anywhere with our online platform, scheduling sessions that fit your lifestyle.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-4">
+                            <i class="fas fa-comments fa-2x p-3"></i>
+                        </div>
+                        <h3 class="h5 card-title">Personalized Learning</h3>
+                        <p class="card-text">Get customized lessons focused on your goals, whether it's conversation, grammar, or business German.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Tutors Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Meet Our Featured Tutors</h2>
+            <p class="lead text-muted">Start your German learning journey with our top-rated tutors</p>
+        </div>
+        
+        <div class="row">
+            {% if featured_tutors %}
+                {% for tutor_profile, tutor_user in featured_tutors %}
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card card-tutor h-100 shadow-sm">
+                            <div class="tutor-image-container">
+                                {% set tutor_images = [
+                                    'https://pixabay.com/get/gb56edf6b1bfca3487c8a1e5f01b7c2749762450f3e21bc42706ce4e8a5569009d5e84cd5ad0fcbd336203fb4827841ed524a378f1434f085f2b381e3e5da33f8_1280.jpg',
+                                    'https://pixabay.com/get/g131c24f0313fdae8d218c2e7c9b5efaa1b9953abcec147665ee1cd02336e4d534e8cf57cfa04506f8388448cbfa20333cd6e121712f66b3ee92c9cb05eac5805_1280.jpg',
+                                    'https://pixabay.com/get/gb838aa7fd461479931776b5cd889385a6c5ac30849fedb9486d5b2303b40c78c4ef02100ffa7dd377bf150c299a8f30485850a5687dc5126804d604b5f5c809c_1280.jpg',
+                                    'https://pixabay.com/get/g96fe74eb4e78d0f94ef9581a7d3a9bcd707a911501cfe9ecd0b8d6ffb41127346845f69f553ce911cb38377451e99169ffd7d1305ce41852d087305e0110f815_1280.jpg'
+                                ] %}
+                                <img src="{{ tutor_images[loop.index0 % 4] }}" alt="{{ tutor_user.username }}" class="tutor-image">
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title mb-1">{{ tutor_user.username }}</h5>
+                                <div class="mb-2">
+                                    <span class="badge bg-primary badge-rate">€{{ tutor_profile.hourly_rate }}/hour</span>
+                                    {% if tutor_profile.specialization %}
+                                        <span class="badge bg-secondary">{{ tutor_profile.specialization }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="rating-display mb-2" data-rating="{{ tutor_profile.avg_rating }}">
+                                    {% for i in range(5) %}
+                                        <i class="star far fa-star"></i>
+                                    {% endfor %}
+                                    <span class="ms-1 text-muted small">({{ tutor_profile.review_count }})</span>
+                                </div>
+                                <p class="card-text text-muted small">
+                                    {% if tutor_profile.bio %}
+                                        {{ tutor_profile.bio[:100] }}{% if tutor_profile.bio|length > 100 %}...{% endif %}
+                                    {% else %}
+                                        Professional German tutor ready to help you achieve your language goals.
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                {% if current_user.is_authenticated and current_user.is_student() %}
+                                    <a href="{{ url_for('student_tutor_profile', tutor_id=tutor_profile.id) }}" class="btn btn-outline-primary w-100">View Profile</a>
+                                {% else %}
+                                    <a href="{{ url_for('login') }}" class="btn btn-outline-primary w-100">Log in to Book</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center">
+                    <p>No featured tutors available yet. Check back soon!</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="text-center mt-4">
+            {% if current_user.is_authenticated and current_user.is_student() %}
+                <a href="{{ url_for('student_tutor_list') }}" class="btn btn-primary">Browse All Tutors</a>
+            {% else %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary">Sign Up to Browse Tutors</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">How It Works</h2>
+            <p class="lead text-muted">Three simple steps to start learning German</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="card bg-transparent border-0 text-center">
+                    <div class="card-body">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <h3 class="mb-0">1</h3>
+                        </div>
+                        <h4>Create an Account</h4>
+                        <p class="text-muted">Sign up as a student and set up your profile in minutes.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4 mb-md-0">
+                <div class="card bg-transparent border-0 text-center">
+                    <div class="card-body">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <h3 class="mb-0">2</h3>
+                        </div>
+                        <h4>Find a Tutor</h4>
+                        <p class="text-muted">Browse profiles, read reviews, and select the perfect tutor for your needs.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card bg-transparent border-0 text-center">
+                    <div class="card-body">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <h3 class="mb-0">3</h3>
+                        </div>
+                        <h4>Book & Learn</h4>
+                        <p class="text-muted">Schedule sessions, make secure payments, and start improving your German.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">What Our Students Say</h2>
+            <p class="lead text-muted">Success stories from our happy learners</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="rating-display mb-3" data-rating="5">
+                            {% for i in range(5) %}
+                                <i class="star fas fa-star"></i>
+                            {% endfor %}
+                        </div>
+                        <p class="card-text">"I've been learning with my tutor for three months, and my German has improved dramatically. The personalized attention makes all the difference!"</p>
+                        <div class="d-flex align-items-center mt-4">
+                            <div class="flex-shrink-0">
+                                <img src="https://pixabay.com/get/gbcc9ef88ed77c067b92e2fe41818b4f97114c21a01e85027bde676510f9f1d184e8b5a82f1a7adfb4bfeaf8299dd4f1857c1f1f206e08f03ebb1b95d4efa60ca_1280.jpg" alt="Student" width="50" height="50" class="rounded-circle">
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-0">Sarah M.</h5>
+                                <small class="text-muted">Beginner Student</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="rating-display mb-3" data-rating="5">
+                            {% for i in range(5) %}
+                                <i class="star fas fa-star"></i>
+                            {% endfor %}
+                        </div>
+                        <p class="card-text">"Finding a tutor who specializes in business German was exactly what I needed for my career. The booking process was simple, and the sessions are extremely helpful."</p>
+                        <div class="d-flex align-items-center mt-4">
+                            <div class="flex-shrink-0">
+                                <img src="https://pixabay.com/get/ga0b487bbbe8da05a8122096f1fb086984f579bea91d91875c917e967bd7a495b4b14c4c1a6f68d6999490a00a7c2f327f8e8bf8d2fd7eeb4a688591afa8dd99f_1280.jpg" alt="Student" width="50" height="50" class="rounded-circle">
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-0">Michael T.</h5>
+                                <small class="text-muted">Business Professional</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="rating-display mb-3" data-rating="4.5">
+                            {% for i in range(5) %}
+                                <i class="star fas fa-star"></i>
+                            {% endfor %}
+                        </div>
+                        <p class="card-text">"I needed to prepare for my German exam quickly, and my tutor designed a perfect study plan. I passed with flying colors! Highly recommend this platform."</p>
+                        <div class="d-flex align-items-center mt-4">
+                            <div class="flex-shrink-0">
+                                <img src="https://pixabay.com/get/g188f7250690ae09a646f01b3a21a2af93c681e284773a6acdb7724ec302a83aeeeee5fe84c00931eac1e5f9d2c19ae0e728084b1782b400622c9f1c40798defe_1280.jpg" alt="Student" width="50" height="50" class="rounded-circle">
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-0">Elena K.</h5>
+                                <small class="text-muted">University Student</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Ready to Start Your German Language Journey?</h2>
+        <p class="lead mb-4">Join our community of learners and connect with expert German tutors today.</p>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg px-5">Go to Dashboard</a>
+        {% else %}
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-5">Sign Up Now</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize star ratings
+        document.querySelectorAll('.rating-display').forEach(function(container) {
+            const rating = parseFloat(container.dataset.rating || 0);
+            const stars = container.querySelectorAll('.star');
+            
+            stars.forEach(function(star, index) {
+                if (index < Math.floor(rating)) {
+                    star.classList.add('fas');
+                    star.classList.remove('far');
+                } else if (index < rating) {
+                    star.classList.add('fas');
+                    star.classList.add('fa-star-half-alt');
+                    star.classList.remove('fa-star');
+                    star.classList.remove('far');
+                } else {
+                    star.classList.add('far');
+                    star.classList.remove('fas');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

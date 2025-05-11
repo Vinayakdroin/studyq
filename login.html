@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block title %}Login - German Tutors{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h1 class="h3">Welcome Back!</h1>
+                        <p class="text-muted">Log in to your German Tutors account</p>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('login') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            {{ form.username(class="form-control", placeholder="Enter your username") }}
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Password</label>
+                            {{ form.password(class="form-control", placeholder="Enter your password") }}
+                            {% if form.password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4 form-check">
+                            {{ form.remember_me(class="form-check-input") }}
+                            <label class="form-check-label" for="remember_me">Remember me</label>
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-transparent py-3 text-center">
+                    <p class="mb-0">Don't have an account? <a href="{{ url_for('register') }}">Sign up</a></p>
+                </div>
+            </div>
+            
+            <!-- Demo Accounts Box -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Demo Accounts</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Student</h6>
+                            <p class="mb-0 small">Username: student<br>Password: student123</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Tutor</h6>
+                            <p class="mb-0 small">Username: tutor<br>Password: tutor123</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Admin</h6>
+                            <p class="mb-0 small">Username: admin<br>Password: admin123</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

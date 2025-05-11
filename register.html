@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+
+{% block title %}Register - German Tutors{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h1 class="h3">Create an Account</h1>
+                        <p class="text-muted">Join German Tutors today</p>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('register') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            {{ form.username(class="form-control", placeholder="Choose a username") }}
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            {{ form.email(class="form-control", placeholder="Enter your email address") }}
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            {{ form.password(class="form-control", placeholder="Create a password (minimum 6 characters)") }}
+                            {% if form.password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            {{ form.confirm_password(class="form-control", placeholder="Confirm your password") }}
+                            {% if form.confirm_password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.confirm_password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">I want to register as:</label>
+                            <div class="role-selection-container">
+                                <label class="role-option" id="student_option">
+                                    {{ form.role(value="student", id="role_student") }}
+                                    <i class="fas fa-user-graduate"></i>
+                                    <span>Student</span>
+                                </label>
+                                <label class="role-option" id="tutor_option">
+                                    {{ form.role(value="tutor", id="role_tutor") }}
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                    <span>Tutor</span>
+                                </label>
+                            </div>
+                            {% if form.role.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.role.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-transparent py-3 text-center">
+                    <p class="mb-0">Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the radio buttons and their container labels
+        const studentRadio = document.getElementById('role_student');
+        const tutorRadio = document.getElementById('role_tutor');
+        const studentOption = document.getElementById('student_option');
+        const tutorOption = document.getElementById('tutor_option');
+        
+        // Set initial selected state
+        if(studentRadio.checked) {
+            studentOption.classList.add('selected');
+        } else if(tutorRadio.checked) {
+            tutorOption.classList.add('selected');
+        } else {
+            // Default to student if nothing is selected
+            studentRadio.checked = true;
+            studentOption.classList.add('selected');
+        }
+        
+        // Add click event listeners to the role options
+        studentOption.addEventListener('click', function() {
+            studentRadio.checked = true;
+            studentOption.classList.add('selected');
+            tutorOption.classList.remove('selected');
+        });
+        
+        tutorOption.addEventListener('click', function() {
+            tutorRadio.checked = true;
+            tutorOption.classList.add('selected');
+            studentOption.classList.remove('selected');
+        });
+    });
+</script>
+{% endblock %}
