@@ -1,0 +1,222 @@
+/* Global Styles */
+:root {
+    --tutor-primary: #4e73df;
+    --tutor-secondary: #5a5c69;
+    --tutor-info: #36b9cc;
+    --tutor-success: #1cc88a;
+    --tutor-warning: #f6c23e;
+    --tutor-danger: #e74a3b;
+    --tutor-light: #f8f9fc;
+    --tutor-dark: #2c3e50;
+}
+
+body {
+    font-family: 'Nunito', 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(rgba(44, 62, 80, 0.8), rgba(44, 62, 80, 0.8)), url('https://pixabay.com/get/g58db4561ad502629aefe9f995c6b00476cb62d7a0b6c81351657857fec3f0bbb9d5c2f012b68e4b74e4e667628c37e1f75c5e1d29ca3fd0011f800e40d98fc3c_1280.jpg');
+    background-size: cover;
+    background-position: center;
+    padding: 100px 0;
+    color: #fff;
+}
+
+.hero-section h1 {
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Navbar Customization */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+/* Card Styles */
+.card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    margin-bottom: 1.5rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-tutor {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.tutor-image-container {
+    height: 200px;
+    overflow: hidden;
+}
+
+.tutor-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.card:hover .tutor-image {
+    transform: scale(1.05);
+}
+
+/* Badge Styles */
+.badge-rate {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Rating Stars */
+.rating-display {
+    color: var(--tutor-warning);
+}
+
+.rating-selector .star-rating {
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0 0.25rem;
+    color: var(--tutor-secondary);
+}
+
+.rating-selector .star-rating.selected,
+.rating-selector .star-rating.hover {
+    color: var(--tutor-warning);
+}
+
+/* Form Customization */
+.form-control:focus {
+    border-color: var(--tutor-primary);
+    box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+}
+
+/* Dashboard */
+.dashboard-container {
+    display: flex;
+}
+
+.dashboard-sidebar {
+    width: 280px;
+    min-height: calc(100vh - 56px);
+    background-color: var(--tutor-dark);
+    color: white;
+    position: sticky;
+    top: 56px;
+    transition: margin-left 0.3s;
+}
+
+.dashboard-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.sidebar-link {
+    padding: 15px 20px;
+    display: block;
+    color: rgba(255, 255, 255, 0.8);
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left-color: var(--tutor-primary);
+    text-decoration: none;
+}
+
+.sidebar-link i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Small screens */
+@media (max-width: 991.98px) {
+    .dashboard-sidebar {
+        margin-left: -280px;
+        position: fixed;
+        z-index: 1000;
+        height: 100%;
+    }
+    
+    .dashboard-sidebar.show {
+        margin-left: 0;
+    }
+    
+    .dashboard-toggle-btn {
+        display: block !important;
+    }
+}
+
+/* Stats boxes */
+.stat-box {
+    border-left: 4px solid;
+    border-radius: 5px;
+}
+
+.stat-box.primary {
+    border-left-color: var(--tutor-primary);
+}
+
+.stat-box.success {
+    border-left-color: var(--tutor-success);
+}
+
+.stat-box.warning {
+    border-left-color: var(--tutor-warning);
+}
+
+.stat-box.info {
+    border-left-color: var(--tutor-info);
+}
+
+.stat-box i {
+    font-size: 2rem;
+    opacity: 0.3;
+}
+
+/* Availability calendar */
+.calendar-day {
+    min-height: 100px;
+    border: 1px solid #dee2e6;
+}
+
+.time-slot {
+    padding: 5px;
+    margin: 5px 0;
+    background-color: #e9ecef;
+    border-radius: 3px;
+    font-size: 0.85rem;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+    padding: 20px 0;
+    background-color: var(--tutor-dark);
+    color: white;
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
