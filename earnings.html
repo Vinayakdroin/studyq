@@ -1,0 +1,195 @@
+{% extends "layout.html" %}
+
+{% block title %}Earnings - German Tutors{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="dashboard-sidebar" id="dashboard-sidebar">
+            <div class="p-3">
+                <h5 class="text-light mb-3">Tutor Dashboard</h5>
+                <hr class="bg-light">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="{{ url_for('tutor_dashboard') }}" class="sidebar-link">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('tutor_profile') }}" class="sidebar-link">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('tutor_schedule') }}" class="sidebar-link">
+                            <i class="fas fa-calendar-alt"></i> Schedule
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('tutor_earnings') }}" class="sidebar-link active">
+                            <i class="fas fa-euro-sign"></i> Earnings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="dashboard-content col">
+            <button class="btn btn-primary mb-3 d-lg-none" id="dashboard-menu-toggle">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+            
+            <h1 class="h3 mb-4">Your Earnings</h1>
+            
+            <!-- Earnings Summary -->
+            <div class="row mb-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Earnings Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <h2 class="display-4 mb-0">€{{ "%.2f"|format(total_earnings) }}</h2>
+                                <p class="text-muted">Total Earnings</p>
+                            </div>
+                            
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <h5 class="mb-0">€{{ tutor_profile.hourly_rate }}</h5>
+                                    <p class="text-muted small mb-0">Hourly Rate</p>
+                                </div>
+                                <div class="col-6">
+                                    <h5 class="mb-0">{{ payments|length }}</h5>
+                                    <p class="text-muted small mb-0">Sessions Completed</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Monthly Earnings</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="earnings-chart" height="200" data-labels="{{ chart_data.labels|tojson }}" data-values="{{ chart_data.data|tojson }}"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment History -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Payment History</h5>
+                </div>
+                <div class="card-body">
+                    {% if payments %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Student</th>
+                                        <th>Session Date</th>
+                                        <th>Duration</th>
+                                        <th>Amount</th>
+                                        <th>Platform Fee</th>
+                                        <th>Your Earnings</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment, booking, student in payments %}
+                                        <tr>
+                                            <td>{{ payment.payment_date.strftime('%b %d, %Y') }}</td>
+                                            <td>{{ student.username }}</td>
+                                            <td>{{ booking.booking_date.strftime('%b %d, %Y') }}</td>
+                                            <td>
+                                                {% set duration_minutes = ((booking.end_time.hour * 60 + booking.end_time.minute) - (booking.start_time.hour * 60 + booking.start_time.minute)) %}
+                                                {{ duration_minutes // 60 }}h {% if duration_minutes % 60 > 0 %}{{ duration_minutes % 60 }}m{% endif %}
+                                            </td>
+                                            <td>€{{ "%.2f"|format(payment.amount) }}</td>
+                                            <td>€{{ "%.2f"|format(payment.platform_fee) }}</td>
+                                            <td>€{{ "%.2f"|format(payment.tutor_payout) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-receipt fa-3x mb-3 text-muted"></i>
+                            <p class="mb-0">No payment history yet.</p>
+                            <p class="text-muted small">Completed sessions will appear here after payment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize dashboard toggle
+        const dashboardToggle = document.getElementById('dashboard-menu-toggle');
+        if (dashboardToggle) {
+            dashboardToggle.addEventListener('click', function() {
+                const sidebar = document.getElementById('dashboard-sidebar');
+                sidebar.classList.toggle('show');
+            });
+        }
+        
+        // Initialize earnings chart
+        const earningsChart = document.getElementById('earnings-chart');
+        if (earningsChart) {
+            const labels = JSON.parse(earningsChart.dataset.labels || '[]');
+            const data = JSON.parse(earningsChart.dataset.values || '[]');
+            
+            new Chart(earningsChart, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Earnings (€)',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '€' + value;
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '€' + context.raw;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

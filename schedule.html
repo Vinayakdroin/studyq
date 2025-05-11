@@ -1,0 +1,304 @@
+{% extends "layout.html" %}
+
+{% block title %}Manage Schedule - German Tutors{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="dashboard-sidebar" id="dashboard-sidebar">
+            <div class="p-3">
+                <h5 class="text-light mb-3">Tutor Dashboard</h5>
+                <hr class="bg-light">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="{{ url_for('tutor_dashboard') }}" class="sidebar-link">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('tutor_profile') }}" class="sidebar-link">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('tutor_schedule') }}" class="sidebar-link active">
+                            <i class="fas fa-calendar-alt"></i> Schedule
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('tutor_earnings') }}" class="sidebar-link">
+                            <i class="fas fa-euro-sign"></i> Earnings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="dashboard-content col">
+            <button class="btn btn-primary mb-3 d-lg-none" id="dashboard-menu-toggle">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+            
+            <h1 class="h3 mb-4">Manage Your Schedule</h1>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Current Availability -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Current Availability</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for day_num in range(7) %}
+                                    <div class="col-md-6 col-lg-4 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-header">{{ day_names[day_num] }}</div>
+                                            <div class="card-body">
+                                                {% if availabilities[day_num] %}
+                                                    {% for slot in availabilities[day_num] %}
+                                                        <div class="mb-2 p-2 bg-light rounded d-flex justify-content-between align-items-center">
+                                                            <span>{{ slot.start_time.strftime('%I:%M %p') }} - {{ slot.end_time.strftime('%I:%M %p') }}</span>
+                                                            <form action="{{ url_for('delete_availability', availability_id=slot.id) }}" method="POST" class="d-inline">
+                                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this time slot?')">
+                                                                    <i class="fas fa-times"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <p class="text-muted text-center mb-0">No slots available</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Upcoming Bookings -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Upcoming Bookings</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if upcoming_bookings %}
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Time</th>
+                                                <th>Student</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for booking in upcoming_bookings %}
+                                                <tr>
+                                                    <td>{{ booking.booking_date.strftime('%B %d, %Y') }}</td>
+                                                    <td>{{ booking.start_time.strftime('%I:%M %p') }} - {{ booking.end_time.strftime('%I:%M %p') }}</td>
+                                                    <td>{{ booking.student.username }}</td>
+                                                    <td>
+                                                        {% if booking.status.name == 'PENDING' %}
+                                                            <span class="badge bg-warning">Pending</span>
+                                                        {% elif booking.status.name == 'CONFIRMED' %}
+                                                            <span class="badge bg-success">Confirmed</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-calendar-check fa-3x mb-3 text-muted"></i>
+                                    <p class="mb-0">No upcoming bookings.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Add Availability -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Add Availability</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ url_for('tutor_schedule') }}">
+                                {{ form.hidden_tag() }}
+                                
+                                <div class="mb-3">
+                                    <label for="day_of_week" class="form-label">Day of Week</label>
+                                    {{ form.day_of_week(class="form-select") }}
+                                    {% if form.day_of_week.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.day_of_week.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="start_time" class="form-label">Start Time (HH:MM)</label>
+                                    {{ form.start_time(class="form-control", placeholder="14:00") }}
+                                    {% if form.start_time.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.start_time.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Use 24-hour format (e.g., 14:00 for 2:00 PM)</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="end_time" class="form-label">End Time (HH:MM)</label>
+                                    {{ form.end_time(class="form-control", placeholder="15:00") }}
+                                    {% if form.end_time.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.end_time.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">End time must be after start time</div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    {{ form.submit(class="btn btn-primary") }}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!-- Schedule Tips -->
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Scheduling Tips</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0 ps-3">
+                                <li class="mb-2">Set regular, consistent time slots each week to attract students.</li>
+                                <li class="mb-2">Consider offering both morning and evening slots to accommodate different schedules.</li>
+                                <li class="mb-2">Block out at least 30-minute slots for effective sessions.</li>
+                                <li class="mb-2">Include buffer time between sessions (10-15 minutes) for breaks.</li>
+                                <li class="mb-0">Update your availability regularly to ensure your calendar is accurate.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize dashboard toggle
+        const dashboardToggle = document.getElementById('dashboard-menu-toggle');
+        if (dashboardToggle) {
+            dashboardToggle.addEventListener('click', function() {
+                const sidebar = document.getElementById('dashboard-sidebar');
+                sidebar.classList.toggle('show');
+            });
+        }
+        
+        // Time input validation
+        const startTimeInput = document.getElementById('start_time');
+        const endTimeInput = document.getElementById('end_time');
+        
+        function validateTimeFormat(input) {
+            const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+            if (!timeRegex.test(input.value)) {
+                input.classList.add('is-invalid');
+                const feedbackElement = document.createElement('div');
+                feedbackElement.className = 'invalid-feedback';
+                feedbackElement.textContent = 'Please use format HH:MM (24-hour)';
+                
+                // Remove any existing feedback
+                const existingFeedback = input.nextElementSibling;
+                if (existingFeedback && existingFeedback.classList.contains('invalid-feedback')) {
+                    existingFeedback.remove();
+                }
+                
+                input.parentNode.appendChild(feedbackElement);
+                return false;
+            } else {
+                input.classList.remove('is-invalid');
+                const existingFeedback = input.nextElementSibling;
+                if (existingFeedback && existingFeedback.classList.contains('invalid-feedback')) {
+                    existingFeedback.remove();
+                }
+                return true;
+            }
+        }
+        
+        if (startTimeInput) {
+            startTimeInput.addEventListener('blur', function() {
+                validateTimeFormat(this);
+            });
+        }
+        
+        if (endTimeInput) {
+            endTimeInput.addEventListener('blur', function() {
+                validateTimeFormat(this);
+            });
+        }
+        
+        // Form validation
+        const availabilityForm = document.querySelector('form');
+        if (availabilityForm) {
+            availabilityForm.addEventListener('submit', function(e) {
+                let valid = true;
+                
+                if (!validateTimeFormat(startTimeInput)) {
+                    valid = false;
+                }
+                
+                if (!validateTimeFormat(endTimeInput)) {
+                    valid = false;
+                }
+                
+                // Check that end time is after start time
+                if (valid) {
+                    const startParts = startTimeInput.value.split(':').map(Number);
+                    const endParts = endTimeInput.value.split(':').map(Number);
+                    
+                    const startMinutes = startParts[0] * 60 + startParts[1];
+                    const endMinutes = endParts[0] * 60 + endParts[1];
+                    
+                    if (endMinutes <= startMinutes) {
+                        endTimeInput.classList.add('is-invalid');
+                        const feedbackElement = document.createElement('div');
+                        feedbackElement.className = 'invalid-feedback';
+                        feedbackElement.textContent = 'End time must be after start time';
+                        
+                        // Remove any existing feedback
+                        const existingFeedback = endTimeInput.nextElementSibling;
+                        if (existingFeedback && existingFeedback.classList.contains('invalid-feedback')) {
+                            existingFeedback.remove();
+                        }
+                        
+                        endTimeInput.parentNode.appendChild(feedbackElement);
+                        valid = false;
+                    }
+                }
+                
+                if (!valid) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,308 @@
+{% extends "layout.html" %}
+
+{% block title %}Tutor Profile - German Tutors{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="dashboard-sidebar" id="dashboard-sidebar">
+            <div class="p-3">
+                <h5 class="text-light mb-3">Tutor Dashboard</h5>
+                <hr class="bg-light">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="{{ url_for('tutor_dashboard') }}" class="sidebar-link">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('tutor_profile') }}" class="sidebar-link active">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('tutor_schedule') }}" class="sidebar-link">
+                            <i class="fas fa-calendar-alt"></i> Schedule
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('tutor_earnings') }}" class="sidebar-link">
+                            <i class="fas fa-euro-sign"></i> Earnings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="dashboard-content col">
+            <button class="btn btn-primary mb-3 d-lg-none" id="dashboard-menu-toggle">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+            
+            <h1 class="h3 mb-4">Edit Your Profile</h1>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Profile Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ url_for('tutor_profile') }}">
+                                {{ form.hidden_tag() }}
+                                
+                                <div class="mb-3">
+                                    <label for="hourly_rate" class="form-label">Hourly Rate (€)</label>
+                                    {{ form.hourly_rate(class="form-control", type="number", min="5", step="0.50") }}
+                                    {% if form.hourly_rate.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.hourly_rate.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Set your hourly rate between €5 and €200.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="years_experience" class="form-label">Years of Experience</label>
+                                    {{ form.years_experience(class="form-control", type="number", min="0") }}
+                                    {% if form.years_experience.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.years_experience.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="specialization" class="form-label">Specialization</label>
+                                    {{ form.specialization(class="form-select") }}
+                                    {% if form.specialization.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.specialization.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Select the area of German language teaching you specialize in.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="proficiency_level" class="form-label">Your German Proficiency Level</label>
+                                    {{ form.proficiency_level(class="form-select") }}
+                                    {% if form.proficiency_level.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.proficiency_level.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="profile_image" class="form-label">Profile Image URL (optional)</label>
+                                    {{ form.profile_image(class="form-control", placeholder="https://example.com/your-image.jpg") }}
+                                    {% if form.profile_image.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.profile_image.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Enter a URL to your profile image. If left empty, a default image will be used.</div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="bio" class="form-label">Bio</label>
+                                    {{ form.bio(class="form-control", rows="5", placeholder="Tell students about yourself, your teaching approach, and experience...") }}
+                                    {% if form.bio.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.bio.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Write a compelling bio that helps students understand your teaching style and expertise.</div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    {{ form.submit(class="btn btn-primary btn-lg") }}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <!-- Profile Preview -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-eye me-2"></i>Profile Preview</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            {% set tutor_images = [
+                                'https://pixabay.com/get/gb56edf6b1bfca3487c8a1e5f01b7c2749762450f3e21bc42706ce4e8a5569009d5e84cd5ad0fcbd336203fb4827841ed524a378f1434f085f2b381e3e5da33f8_1280.jpg',
+                                'https://pixabay.com/get/g131c24f0313fdae8d218c2e7c9b5efaa1b9953abcec147665ee1cd02336e4d534e8cf57cfa04506f8388448cbfa20333cd6e121712f66b3ee92c9cb05eac5805_1280.jpg',
+                                'https://pixabay.com/get/gb838aa7fd461479931776b5cd889385a6c5ac30849fedb9486d5b2303b40c78c4ef02100ffa7dd377bf150c299a8f30485850a5687dc5126804d604b5f5c809c_1280.jpg',
+                                'https://pixabay.com/get/g96fe74eb4e78d0f94ef9581a7d3a9bcd707a911501cfe9ecd0b8d6ffb41127346845f69f553ce911cb38377451e99169ffd7d1305ce41852d087305e0110f815_1280.jpg'
+                            ] %}
+                            <img src="{{ tutor_profile.profile_image or tutor_images[tutor_profile.id % 4] }}" alt="{{ current_user.username }}" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;" id="preview-image">
+                            <h5 class="mb-0">{{ current_user.username }}</h5>
+                            <p class="text-muted small">German Tutor</p>
+                            <div class="mb-2">
+                                <span class="badge bg-primary p-2" id="preview-rate">€{{ tutor_profile.hourly_rate }}/hour</span>
+                                {% if tutor_profile.specialization %}
+                                    <span class="badge bg-secondary" id="preview-specialization">{{ tutor_profile.specialization }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="rating-display mb-3" data-rating="{{ tutor_profile.avg_rating }}">
+                                {% for i in range(5) %}
+                                    <i class="star far fa-star"></i>
+                                {% endfor %}
+                                <span class="ms-1 text-muted">({{ tutor_profile.review_count }})</span>
+                            </div>
+                            <p class="small text-start" id="preview-bio">
+                                {{ tutor_profile.bio or "No bio available yet. Add one to tell students about yourself!" }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Tips -->
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Profile Tips</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0 ps-3">
+                                <li class="mb-2">Include your teaching experience and qualifications in your bio.</li>
+                                <li class="mb-2">Mention any specific teaching methods or approaches you use.</li>
+                                <li class="mb-2">Set a competitive hourly rate based on your experience level.</li>
+                                <li class="mb-2">Select a specialization that matches your expertise.</li>
+                                <li class="mb-0">Add a professional profile picture to build trust with students.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize dashboard toggle
+        const dashboardToggle = document.getElementById('dashboard-menu-toggle');
+        if (dashboardToggle) {
+            dashboardToggle.addEventListener('click', function() {
+                const sidebar = document.getElementById('dashboard-sidebar');
+                sidebar.classList.toggle('show');
+            });
+        }
+        
+        // Initialize star ratings
+        document.querySelectorAll('.rating-display').forEach(function(container) {
+            const rating = parseFloat(container.dataset.rating || 0);
+            const stars = container.querySelectorAll('.star');
+            
+            stars.forEach(function(star, index) {
+                if (index < Math.floor(rating)) {
+                    star.classList.add('fas');
+                    star.classList.remove('far');
+                } else if (index < rating) {
+                    star.classList.add('fas');
+                    star.classList.add('fa-star-half-alt');
+                    star.classList.remove('fa-star');
+                    star.classList.remove('far');
+                } else {
+                    star.classList.add('far');
+                    star.classList.remove('fas');
+                }
+            });
+        });
+        
+        // Live preview updates
+        const hourlyRateInput = document.getElementById('hourly_rate');
+        const specializationInput = document.getElementById('specialization');
+        const bioInput = document.getElementById('bio');
+        const profileImageInput = document.getElementById('profile_image');
+        
+        const previewRate = document.getElementById('preview-rate');
+        const previewSpecialization = document.getElementById('preview-specialization');
+        const previewBio = document.getElementById('preview-bio');
+        const previewImage = document.getElementById('preview-image');
+        
+        if (hourlyRateInput) {
+            hourlyRateInput.addEventListener('input', function() {
+                previewRate.textContent = `€${this.value}/hour`;
+            });
+        }
+        
+        if (specializationInput) {
+            specializationInput.addEventListener('change', function() {
+                if (this.value) {
+                    if (previewSpecialization) {
+                        previewSpecialization.textContent = this.options[this.selectedIndex].text;
+                        previewSpecialization.style.display = 'inline-block';
+                    } else {
+                        const newBadge = document.createElement('span');
+                        newBadge.id = 'preview-specialization';
+                        newBadge.className = 'badge bg-secondary';
+                        newBadge.textContent = this.options[this.selectedIndex].text;
+                        previewRate.parentNode.appendChild(newBadge);
+                    }
+                } else if (previewSpecialization) {
+                    previewSpecialization.style.display = 'none';
+                }
+            });
+        }
+        
+        if (bioInput) {
+            bioInput.addEventListener('input', function() {
+                previewBio.textContent = this.value || "No bio available yet. Add one to tell students about yourself!";
+            });
+        }
+        
+        if (profileImageInput) {
+            profileImageInput.addEventListener('input', function() {
+                if (this.value) {
+                    previewImage.src = this.value;
+                } else {
+                    // Reset to default image
+                    const tutor_images = [
+                        'https://pixabay.com/get/gb56edf6b1bfca3487c8a1e5f01b7c2749762450f3e21bc42706ce4e8a5569009d5e84cd5ad0fcbd336203fb4827841ed524a378f1434f085f2b381e3e5da33f8_1280.jpg',
+                        'https://pixabay.com/get/g131c24f0313fdae8d218c2e7c9b5efaa1b9953abcec147665ee1cd02336e4d534e8cf57cfa04506f8388448cbfa20333cd6e121712f66b3ee92c9cb05eac5805_1280.jpg',
+                        'https://pixabay.com/get/gb838aa7fd461479931776b5cd889385a6c5ac30849fedb9486d5b2303b40c78c4ef02100ffa7dd377bf150c299a8f30485850a5687dc5126804d604b5f5c809c_1280.jpg',
+                        'https://pixabay.com/get/g96fe74eb4e78d0f94ef9581a7d3a9bcd707a911501cfe9ecd0b8d6ffb41127346845f69f553ce911cb38377451e99169ffd7d1305ce41852d087305e0110f815_1280.jpg'
+                    ];
+                    const profileId = {{ tutor_profile.id }} % 4;
+                    previewImage.src = tutor_images[profileId];
+                }
+            });
+            
+            // Handle image load errors
+            previewImage.addEventListener('error', function() {
+                const tutor_images = [
+                    'https://pixabay.com/get/gb56edf6b1bfca3487c8a1e5f01b7c2749762450f3e21bc42706ce4e8a5569009d5e84cd5ad0fcbd336203fb4827841ed524a378f1434f085f2b381e3e5da33f8_1280.jpg',
+                    'https://pixabay.com/get/g131c24f0313fdae8d218c2e7c9b5efaa1b9953abcec147665ee1cd02336e4d534e8cf57cfa04506f8388448cbfa20333cd6e121712f66b3ee92c9cb05eac5805_1280.jpg',
+                    'https://pixabay.com/get/gb838aa7fd461479931776b5cd889385a6c5ac30849fedb9486d5b2303b40c78c4ef02100ffa7dd377bf150c299a8f30485850a5687dc5126804d604b5f5c809c_1280.jpg',
+                    'https://pixabay.com/get/g96fe74eb4e78d0f94ef9581a7d3a9bcd707a911501cfe9ecd0b8d6ffb41127346845f69f553ce911cb38377451e99169ffd7d1305ce41852d087305e0110f815_1280.jpg'
+                ];
+                const profileId = {{ tutor_profile.id }} % 4;
+                this.src = tutor_images[profileId];
+                
+                // Clear the invalid URL
+                if (profileImageInput.value) {
+                    alert('Invalid image URL. Please provide a valid direct link to an image.');
+                    profileImageInput.value = '';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
